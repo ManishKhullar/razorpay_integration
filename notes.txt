@@ -1,0 +1,37 @@
+app.post("/order/validate", (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+  try {
+    //   generated_signature = hmac_sha256(order_id + "|" + razorpay_payment_id, secret);
+    const signature = crypto.createHmac("sha256", process.env.RAZORPAY_KEY_SECRET);
+    signature.update(razorpay_order_id + "|" + razorpay_payment_id);
+    const hmac_digest = signature.digest("hex");
+
+    if (razorpay_signature == hmac_digest) {
+      res.status(200).json({
+        msg: "Success",
+      });
+    }
+
+    res.send(400).json({
+      msg: "Payment is not Legit!",
+    });
+  } catch (error) {
+    res.send(500).send("Error");
+  }
+});
+
+
+
+
+
+
+
+const order = await fetch("http://localhost:5000/order", {
+      method: "POST",
+      body: JSON.stringify(requestBody),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const jsonOrder = await order.json();
